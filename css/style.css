@@ -1,0 +1,145 @@
+/* General styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #e0f7fa; /* Light blue background color */
+  margin: 0;
+  padding: 0;
+}
+
+header,
+footer {
+  background-color: #00796b; /* Dark teal background color */
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+}
+
+main {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+}
+
+/* Styling for labels */
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #004d40; /* Dark teal text color for contrast */
+}
+
+/* Styling for inputs, textarea, and select elements */
+input[type="file"],
+textarea,
+select {
+  width: 780px; /* Full width */
+  padding: 12px; /* Padding for easier interaction */
+  margin-bottom: 20px; /* Margin below the element */
+  border: 1px solid #004d40; /* Dark teal border */
+  border-radius: 5px; /* Rounded corners */
+  background-color: #b2dfdb; /* Light teal background color */
+  font-size: 1rem; /* Font size */
+  transition: border-color 0.3s; /* Smooth transition */
+}
+
+/* Hover and focus effects */
+input[type="file"]:hover,
+textarea:hover,
+select:hover {
+  border-color: #00695c; /* Change border color on hover */
+}
+
+input[type="file"]:focus,
+textarea:focus,
+select:focus {
+  outline: none; /* Remove default outline */
+  border-color: #00695c; /* Change border color on focus */
+}
+
+/* Styling for buttons */
+button {
+  padding: 12px 20px; /* Padding for better touch and mouse interaction */
+  background-color: #00acc1; /* Cyan background color */
+  color: white; /* White text color */
+  border: none;
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Change cursor on hover */
+  transition: background-color 0.3s; /* Smooth transition */
+  font-size: 1rem; /* Font size */
+  margin-right: 10px; /* Margin between buttons */
+}
+
+/* Hover effect for buttons */
+button:hover {
+  background-color: #00838f; /* Darker cyan on hover */
+}
+
+/* Styling for the output div */
+#output {
+  margin-top: 20px; /* Margin above */
+  padding: 12px;
+  border: 1px solid #004d40; /* Dark teal border */
+  border-radius: 5px; /* Rounded corners */
+  background-color: #e0f7fa; /* Light blue background color */
+  min-height: 100px; /* Minimum height */
+  white-space: pre-wrap; /* Preserve whitespace */
+}
+
+/* Audio element hidden since it's played automatically */
+audio {
+  display: none;
+}
+
+/* Styling for the dropdown */
+select {
+  width: 100%; /* Full width */
+  padding: 10px; /* Padding for better touch and mouse interaction */
+  border-radius: 5px; /* Rounded corners */
+  border: 1px solid #004d40; /* Dark teal border */
+  background-color: #fff; /* White background */
+  font-size: 1rem; /* Font size */
+  margin-bottom: 20px; /* Margin below the dropdown */
+  appearance: none; /* Hide default browser arrow */
+  /* Custom arrow */
+  background-image: url("path/to/arrow-icon.svg"); /* Use your own arrow icon */
+  background-repeat: no-repeat;
+  background-position: right 10px center; /* Position the arrow */
+  background-size: 12px; /* Size of the arrow */
+}
+
+/* Add hover effect for dropdown */
+select:hover {
+  border-color: #00695c; /* Change border color on hover */
+}
+
+/* Add focus effect for dropdown */
+select:focus {
+  outline: none; /* Remove default outline */
+  border-color: #00695c; /* Change border color on focus */
+}
+
+/* Style the analysis output div */
+#analysis-output {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #004d40; /* Dark teal border */
+  border-radius: 5px;
+  background-color: #e0f7fa; /* Light blue background */
+}
+
+/* Style the tables */
+#analysis-output table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+#analysis-output th,
+#analysis-output td {
+  border: 1px solid #004d40; /* Dark teal border */
+  padding: 8px;
+  text-align: left;
+}

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinguaFusion</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <header>
+      <h1>LinguaFusion</h1>
+    </header>
+
+    <main>
+      <form id="upload-form" method="post" enctype="multipart/form-data">
+        <label for="document">Upload Document:</label>
+        <input type="file" id="document" name="document" accept=".pdf" />
+        <button type="button" onclick="uploadDocument()">
+          <i class="fas fa-file-alt"></i> Analyze Document
+        </button>
+      </form>
+      <br />
+      <label for="text">Type Text:</label>
+      <textarea id="text" rows="4"></textarea>
+
+      <label for="languages">Select a Language:</label>
+      <select id="languages">
+        <option value="mr">Marathi</option>
+        <option value="ko">Korean</option>
+        <option value="fr">French</option>
+        <option value="kn">Kannada</option>
+        <option value="zh-Hans">Chinese (Simplified)</option>
+        <option value="es">Spanish</option>
+      </select>
+
+      <button onclick="translateText()">
+        <i class="fas fa-language"></i> Translate
+      </button>
+      <button onclick="talkSpeech()">
+        <i class="fas fa-volume-up"></i> Audio
+      </button>
+
+      <div id="output"></div>
+      <div id="analysis-output"></div>
+
+      <audio id="audio"></audio>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 LinguaFusion</p>
+    </footer>
+
+    <script>
+      function translateText() {
+        let text = document.getElementById("text").value;
+        let language = document.getElementById("languages").value;
+
+        fetch("/translate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: text, to: language }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("output").innerText = data.translatedText;
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function talkSpeech() {
+        const text = document.getElementById("output").innerText;
+
+        fetch("/speak", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: text }),
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error("Speech synthesis failed.");
+            }
+          })
+          .then((data) => {
+            const audioFilename = data.audioFilename;
+            // Construct the URL to access the audio file from Azure Blob Storage
+            const audioUrl = `https://linguafusionaudio.blob.core.windows.net/audiofiles/${audioFilename}`;
+            const audioElement = document.getElementById("audio");
+
+            // Set the src attribute to the audio file URL
+            audioElement.src = audioUrl;
+
+            // Add an event listener to confirm when audio starts playing
+            audioElement.addEventListener("play", () => {
+              console.log("Audio is playing");
+              Swal.fire({
+                title: "Playing Audio",
+                text: "Audio file is now playing.",
+                icon: "info",
+                confirmButtonText: "OK",
+              });
+            });
+
+            // Add an event listener for when the audio finishes playing
+            audioElement.addEventListener("ended", () => {
+              Swal.fire({
+                title: "Success!",
+                text: `Audio file (${audioFilename}) has been saved to your device and Azure Blob Storage.`,
+                icon: "success",
+                confirmButtonText: "OK",
+              });
+            });
+
+            // Add an error event listener for audio
+            audioElement.addEventListener("error", () => {
+              console.error("Failed to load audio file:", audioUrl);
+              Swal.fire({
+                title: "Error!",
+                text: "Failed to play the audio file.",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+            });
+
+            // Play the audio file
+            audioElement.play();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire({
+              title: "Error!",
+              text: "An error occurred while processing your request.",
+              icon: "error",
+              confirmButtonText: "OK",
+            });
+          });
+      }
+
+      // Function to format and display analysis results
+      function displayAnalysisResults(analysisResult) {
+        const analysisOutputDiv = document.getElementById("analysis-output");
+
+        // Clear any existing content
+        analysisOutputDiv.innerHTML = "";
+
+        // Display the text data
+        if (analysisResult.text) {
+          const textSection = document.createElement("div");
+          textSection.innerHTML = `<strong>Text:</strong><p>${analysisResult.text.replace(
+            /\n/g,
+            "<br>"
+          )}</p>`;
+          analysisOutputDiv.appendChild(textSection);
+        }
+
+        // Display the table data
+        if (analysisResult.tables && analysisResult.tables.length > 0) {
+          const tablesSection = document.createElement("div");
+          tablesSection.innerHTML = "<strong>Tables:</strong>";
+          analysisResult.tables.forEach((table, tableIndex) => {
+            const tableElement = document.createElement("table");
+            tableElement.classList.add("table");
+
+            // Create rows for the table
+            for (let rowIndex = 0; rowIndex < table.rows; rowIndex++) {
+              const rowElement = document.createElement("tr");
+
+              // Create columns for the row
+              for (let colIndex = 0; colIndex < table.columns; colIndex++) {
+                const cellContent = table.cells.find(
+                  (cell) =>
+                    cell.rowIndex === rowIndex && cell.columnIndex === colIndex
+                ).content;
+                const cellElement = document.createElement("td");
+                cellElement.textContent = cellContent;
+                rowElement.appendChild(cellElement);
+              }
+
+              tableElement.appendChild(rowElement);
+            }
+
+            tablesSection.appendChild(tableElement);
+          });
+
+          analysisOutputDiv.appendChild(tablesSection);
+        }
+      }
+
+      // Function to initiate the document analysis
+      function uploadDocument() {
+        // Show loading alert using SweetAlert2
+        const loadingAlert = Swal.fire({
+          title: "Analyzing...",
+          text: "Please wait while your document is being analyzed.",
+          icon: "info",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // Create a FormData object from the form
+        const formData = new FormData(document.getElementById("upload-form"));
+
+        // Send the POST request to the server
+        fetch("/analyze", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // Dismiss the loading alert
+            Swal.close();
+
+            // Display the analysis results
+            displayAnalysisResults(data);
+          })
+          .catch((error) => {
+            // Dismiss the loading alert
+            Swal.close();
+
+            console.error("Error:", error);
+            // Optionally, you can show an error alert with SweetAlert2
+            Swal.fire({
+              title: "Error!",
+              text: "An error occurred while processing your request.",
+              icon: "error",
+              confirmButtonText: "OK",
+            });
+          });
+      }
+    </script>
+  </body>
+</html>
